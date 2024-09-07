@@ -40,7 +40,8 @@ def get_stock_data(ticker):
             for _, transaction in insider_transactions.iterrows():
                 insider_trades.append({
                     "insider": transaction['Insider'],
-                    "shares": transaction['Shares']
+                    "shares": transaction['Shares'],
+                    "type": "Purchase" if transaction['Transaction'] == 'Buy' else "Sale"
                 })
             insider_trades = insider_trades[:5]  # Limit to 5 most recent transactions
         
@@ -59,7 +60,7 @@ def get_stock_data(ticker):
         return jsonify({
             "stockData": stock_data,
             "news": formatted_news,
-            "insiderSales": insider_trades,
+            "insiderTrades": insider_trades,
             "analystRatings": analyst_ratings,
         })
     
