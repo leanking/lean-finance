@@ -34,7 +34,6 @@ def get_stock_data(ticker):
         news = stock.news[:5]
         formatted_news = [{"headline": item['title']} for item in news]
         
-        
         insider_transactions = stock.insider_transactions
         insider_trades = []
         if not insider_transactions.empty:
@@ -62,10 +61,20 @@ def get_stock_data(ticker):
         balance_sheet = stock.balance_sheet
         cash_flow = stock.cashflow
         
+        def convert_timestamps(data):
+            if isinstance(data, dict):
+                return {str(k): convert_timestamps(v) for k, v in data.items()}
+            elif isinstance(data, list):
+                return [convert_timestamps(v) for v in data]
+            elif isinstance(data, pd.Timestamp):
+                return data.strftime('%Y-%m-%d')
+            else:
+                return data
+
         financial_statements = {
-            "income_statement": income_stmt.to_dict() if not income_stmt.empty else {},
-            "balance_sheet": balance_sheet.to_dict() if not balance_sheet.empty else {},
-            "cash_flow": cash_flow.to_dict() if not cash_flow.empty else {}
+            "income_statement": convert_timestamps(income_stmt.to_dict()) if not income_stmt.empty else {},
+            "balance_sheet": convert_timestamps(balance_sheet.to_dict()) if not balance_sheet.empty else {},
+            "cash_flow": convert_timestamps(cash_flow.to_dict()) if not cash_flow.empty else {}
         }
         
         return jsonify({
@@ -78,7 +87,7 @@ def get_stock_data(ticker):
     
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-
+        
 @app.route('/backtest', methods=['POST'])
 def backtest():
     data = request.json
