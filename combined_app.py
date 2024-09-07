@@ -56,33 +56,11 @@ def get_stock_data(ticker):
         else:
             analyst_ratings = {"buy": 0, "hold": 0, "sell": 0}
         
-        # Get last three financial statements
-        income_stmt = stock.financials
-        balance_sheet = stock.balance_sheet
-        cash_flow = stock.cashflow
-        
-        def convert_timestamps(data):
-            if isinstance(data, dict):
-                return {str(k): convert_timestamps(v) for k, v in data.items()}
-            elif isinstance(data, list):
-                return [convert_timestamps(v) for v in data]
-            elif isinstance(data, pd.Timestamp):
-                return data.strftime('%Y-%m-%d')
-            else:
-                return data
-
-        financial_statements = {
-            "income_statement": convert_timestamps(income_stmt.to_dict()) if not income_stmt.empty else {},
-            "balance_sheet": convert_timestamps(balance_sheet.to_dict()) if not balance_sheet.empty else {},
-            "cash_flow": convert_timestamps(cash_flow.to_dict()) if not cash_flow.empty else {}
-        }
-        
         return jsonify({
             "stockData": stock_data,
             "news": formatted_news,
             "insiderSales": insider_trades,
             "analystRatings": analyst_ratings,
-            "financialStatements": financial_statements
         })
     
     except Exception as e:
