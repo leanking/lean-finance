@@ -45,23 +45,29 @@ def get_stock_data(ticker):
                 })
             insider_trades = insider_trades[:5]  # Limit to 5 most recent transactions
         
-        # Get analyst recommendations
-        recommendations = stock.recommendations
-        if not recommendations.empty:
-            latest_rec = recommendations.iloc[-1]
-            analyst_ratings = {
-                "buy": int(latest_rec.get('Strong Buy', 0) + latest_rec.get('Buy', 0)),
-                "hold": int(latest_rec.get('Hold', 0)),
-                "sell": int(latest_rec.get('Sell', 0) + latest_rec.get('Strong Sell', 0))
-            }
-        else:
-            analyst_ratings = {"buy": 0, "hold": 0, "sell": 0}
+        # Get institutional holders
+        institutional_holders = stock.institutional_holders
+        top_institutional_holders = []
+        if not institutional_holders.empty:
+            top_institutional_holders = institutional_holders.head(5).to_dict('records')
+        
+        # Get analyst price targets
+        analyst_price_target = stock.info.get('targetMeanPrice')
+        
+        # Get EPS trend
+        eps_trend = stock.info.get('earningsTrend', {})
+        
+        # Get earnings history
+        earnings_history = stock.earnings_history
         
         return jsonify({
             "stockData": stock_data,
             "news": formatted_news,
             "insiderTrades": insider_trades,
-            "analystRatings": analyst_ratings,
+            "institutionalHolders": top_institutional_holders,
+            "analystPriceTarget": analyst_price_target,
+            "epsTrend": eps_trend,
+            "earningsHistory": earnings_history.to_dict('records') if not earnings_history.empty else []
         })
     
     except Exception as e:
