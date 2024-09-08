@@ -66,8 +66,7 @@ def get_stock_data(ticker):
             "insiderTrades": insider_trades,
             "institutionalHolders": top_institutional_holders,
             "analystPriceTarget": analyst_price_target,
-            "epsTrend": eps_trend,
-            "earningsHistory": earnings_history.to_dict('records') if not earnings_history.empty else []
+            "earningsHistory": earnings_history.apply(lambda row: {**row.to_dict(), 'date': row.name.strftime('%Y-%m-%d')}).to_dict('records') if not earnings_history.empty else []
         })
     
     except Exception as e:
